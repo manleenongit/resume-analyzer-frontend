@@ -61,7 +61,7 @@ export default function ResumeMatcher() {
       formData.append("jobDescription", jobDescription);
 
       const response = await axios.post(
-        'https://resume-analyzer-backend-api-cmzw.onrender.com', 
+        'https://resume-analyzer-backend-api-cmzw.onrender.com/api/analyze', 
         formData
       );
       
