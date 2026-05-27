@@ -1,9 +1,9 @@
 "use client";
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Upload, CheckCircle, BookOpen, Loader2, ArrowLeft, Zap } from 'lucide-react';
+import { Upload, CheckCircle, BookOpen, Loader2, ArrowLeft, Zap, Trophy, PartyPopper } from 'lucide-react';
 
-// --- NEW TYPESCRIPT INTERFACES FOR THE LINKS ---
+// --- NEW TYPESCRIPT INTERFACES TO MATCH UPDATED BACKEND STRUCTURE ---
 interface TaskLink {
   youtube: string;
   course: string;
@@ -15,18 +15,19 @@ interface DetailedTask {
   links: TaskLink;
 }
 
-interface RoadmapItem {
-  phase: string;
-  tasks: string[];
-  resources: string;
-  detailed_tasks?: DetailedTask[]; // <-- The frontend now knows about this!
+interface GamePlanPhase {
+  skill_name: string;
+  links: TaskLink;
 }
 
 interface AnalysisResult {
-  score: number;
-  matchedSkills: string[];
-  missingSkills: string[];
-  roadmap: RoadmapItem[];
+  match_score: number;
+  nailed_skills: string[];
+  needs_work: string[];
+  is_perfect_match: boolean;
+  game_plan: {
+    [phaseName: string]: GamePlanPhase[];
+  };
 }
 
 export default function ResumeMatcher() {
@@ -38,7 +39,7 @@ export default function ResumeMatcher() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleProcess = async () => {
-    setErrorMessage(null); // Clear old ghosts
+    setErrorMessage(null); 
     if (!resume && !jobDescription) {
       setErrorMessage("Double trouble! You forgot BOTH the resume and the job description. The robot is hungry, feed it!");
       return;
@@ -66,7 +67,7 @@ export default function ResumeMatcher() {
       );
       
       setResult(response.data);
-      setView('results'); // Switch to results view after success
+      setView('results'); 
     } catch (error) {
       console.error("Error:", error);
       
@@ -75,7 +76,7 @@ export default function ResumeMatcher() {
       } else {
         setErrorMessage("The backend is taking a nap or the tunnel is broken. Make sure your friend's server is actually running!");
       }
-      setView('upload'); // Keep them on upload to try again, or create an error view
+      setView('upload'); 
     } finally {
       setLoading(false);
     }
@@ -118,8 +119,6 @@ export default function ResumeMatcher() {
             </p>
           </div>
 
-        
-
           <button 
             onClick={() => setErrorMessage(null)}
             className="px-10 py-4 bg-black text-white font-black text-xl uppercase hover:bg-zinc-800 transition-all shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] active:shadow-none active:translate-x-1 active:translate-y-1"
@@ -128,8 +127,7 @@ export default function ResumeMatcher() {
           </button>
         </div>
         
-        {/* Background Decorative Elements */}
-        <div className="absolute top-10 left-10 w-20 h-20 bg-yellow-400 border-4 border-black -z-10 animate-spin-slow"></div>
+        <div className="absolute top-10 left-10 w-20 h-20 bg-yellow-400 border-4 border-black -z-10"></div>
         <div className="absolute bottom-10 right-10 w-32 h-32 bg-purple-500 rounded-full border-4 border-black -z-10 animate-bounce"></div>
       </div>
     );
@@ -207,7 +205,7 @@ export default function ResumeMatcher() {
           {/* Score Bubble */}
           <div className="bg-[#A855F7] p-8 border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] text-center relative flex flex-col justify-center min-h-62.5">
             <div className="text-7xl sm:text-8xl font-black text-white drop-shadow-[6px_6px_0px_rgba(0,0,0,1)] wrap-break-words">
-              {result?.score}%
+              {result?.match_score}%
             </div>
             <p className="text-white font-black uppercase text-xl mt-4 tracking-tighter">Overall Match Score</p>
             <div className="absolute top-0 right-0 bg-yellow-400 border-l-4 border-b-4 border-black px-4 py-1 font-black text-sm">
@@ -216,101 +214,122 @@ export default function ResumeMatcher() {
           </div>
 
           {/* Skills Analysis Card */}
-<div className="bg-white border-4 border-black p-8 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] flex flex-col">
-  <h3 className="text-2xl font-black mb-6 uppercase border-b-4 border-black pb-2 inline-block self-start">
-    Skill Breakdown
-  </h3>
-  
-  <div className="space-y-6">
-    {/* MATCHED SECTION */}
-    <div>
-      <p className="text-xs font-black uppercase text-gray-500 mb-2">✅ Nailed It</p>
-      <div className="flex flex-wrap gap-3">
-        {result?.matchedSkills.map((s) => (
-          <span key={s} className="px-3 py-1 bg-[#4ADE80] border-2 border-black font-black text-[10px] uppercase shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
-            {s}
-          </span>
-        ))}
-      </div>
-    </div>
-
-    {/* MISSING SECTION */}
-    <div>
-      <p className="text-xs font-black uppercase text-gray-500 mb-2">🚩 Needs Work</p>
-      <div className="flex flex-wrap gap-3">
-        {result?.missingSkills.map((s) => (
-          <span key={s} className="px-3 py-1 bg-[#FF5F5F] text-white border-2 border-black font-black text-[10px] uppercase shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
-            {s}
-          </span>
-        ))}
-        {result?.missingSkills.length === 0 && (
-          <p className="text-sm font-bold italic text-green-600">No missing skills! You are a beast!</p>
-        )}
-      </div>
-    </div>
-  </div>
-</div>
-        </div>
-
-        {/* BOTTOM SECTION: Full-Width Roadmap */}
-        <div className="bg-black p-8 border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
-          <h3 className="text-4xl font-black mb-12 flex items-center gap-4 text-white uppercase italic tracking-tighter">
-            <BookOpen className="text-yellow-400" size={40} /> The Game Plan
-          </h3>
-          
-          <div className="space-y-12">
-            {result?.roadmap.map((item, idx) => (
-              <div key={idx} className="flex gap-8 relative group">
-                <div className="flex flex-col items-center">
-                  <div className="w-16 h-16 border-4 border-white bg-yellow-400 text-black flex items-center justify-center text-3xl font-black shrink-0 z-10 shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
-                    {idx + 1}
-                  </div>
-                  {idx !== result.roadmap.length - 1 && (
-                    <div className="w-1.5 h-full bg-white mt-4"></div>
-                  )}
-                </div>
-                
-                <div className="pb-10 w-full">
-                  <h4 className="text-3xl font-black text-yellow-400 uppercase tracking-tighter mb-4">
-                    {item.phase}
-                  </h4>
-                  
-                  {/* --- NEW DYNAMIC LINKS UI --- */}
-                  {item.detailed_tasks && item.detailed_tasks.length > 0 ? (
-                    <div className="flex flex-col gap-4">
-                      {item.detailed_tasks.map((task, tIdx) => (
-                        <div key={tIdx} className="bg-zinc-900 border-2 border-zinc-700 p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                          <p className="text-[#4ADE80] font-black uppercase text-lg mb-3">
-                            {task.skill_name}
-                          </p>
-                          <div className="flex flex-wrap gap-3">
-                            <a href={task.links.youtube} target="_blank" rel="noreferrer" className="bg-red-500 text-white px-3 py-1 text-xs font-black uppercase border-2 border-black hover:translate-x-1 hover:-translate-y-1 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all">
-                              📺 YouTube
-                            </a>
-                            <a href={task.links.course} target="_blank" rel="noreferrer" className="bg-blue-500 text-white px-3 py-1 text-xs font-black uppercase border-2 border-black hover:translate-x-1 hover:-translate-y-1 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all">
-                              🎓 Course
-                            </a>
-                            <a href={task.links.reading} target="_blank" rel="noreferrer" className="bg-white text-black px-3 py-1 text-xs font-black uppercase border-2 border-black hover:translate-x-1 hover:-translate-y-1 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all">
-                              📖 Read
-                            </a>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    /* Fallback if the phase is completely empty */
-                    <div className="bg-zinc-900 border-2 border-zinc-700 p-4 mb-4">
-                      <p className="text-[#4ADE80] font-black uppercase text-md">
-                        {item.tasks?.length > 0 ? item.tasks.join(' • ') : 'Master the Essentials'}
-                      </p>
-                    </div>
-                  )}
-
+          <div className="bg-white border-4 border-black p-8 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] flex flex-col">
+            <h3 className="text-2xl font-black mb-6 uppercase border-b-4 border-black pb-2 inline-block self-start">
+              Skill Breakdown
+            </h3>
+            
+            <div className="space-y-6">
+              {/* MATCHED SECTION */}
+              <div>
+                <p className="text-xs font-black uppercase text-gray-500 mb-2">✅ Nailed It</p>
+                <div className="flex flex-wrap gap-3">
+                  {result?.nailed_skills.map((s) => (
+                    <span key={s} className="px-3 py-1 bg-[#4ADE80] border-2 border-black font-black text-[10px] uppercase shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+                      {s}
+                    </span>
+                  ))}
                 </div>
               </div>
-            ))}
+
+              {/* MISSING SECTION */}
+              <div>
+                <p className="text-xs font-black uppercase text-gray-500 mb-2">🚩 Needs Work</p>
+                <div className="flex flex-wrap gap-3">
+                  {result?.needs_work.map((s) => (
+                    <span key={s} className="px-3 py-1 bg-[#FF5F5F] text-white border-2 border-black font-black text-[10px] uppercase shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+                      {s}
+                    </span>
+                  ))}
+                  {result?.needs_work.length === 0 && (
+                    <p className="text-sm font-bold italic text-green-600">No missing skills! You are a beast!</p>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
+
+        {/* REQUIREMENT 1: CONDITIONAL PERFECT MATCH SCREEN */}
+        {result?.is_perfect_match ? (
+          <div className="bg-[#4ADE80] border-8 border-black p-12 text-center shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] transform -rotate-1 relative overflow-hidden">
+            <div className="absolute -top-6 -left-6 bg-yellow-400 border-4 border-black p-4 rounded-full animate-spin-slow">
+              <PartyPopper size={40} className="text-black" />
+            </div>
+            <div className="absolute -bottom-6 -right-6 bg-purple-500 border-4 border-black p-4 rounded-full animate-bounce">
+              <Trophy size={40} className="text-white" />
+            </div>
+
+            <h3 className="text-5xl font-black text-black uppercase tracking-tightest mb-4">
+              🎯 PERFECT MATCH!
+            </h3>
+            <h4 className="text-2xl font-extrabold text-zinc-900 uppercase italic mb-6">
+              Mission Accomplished
+            </h4>
+            <div className="bg-white border-4 border-black p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] max-w-2xl mx-auto">
+              <p className="text-lg font-bold uppercase text-black leading-snug">
+                Your resume completely aligns with the job profile specifications. No structural optimization gap anomalies found. Skip the textbooks and send that application over immediately!
+              </p>
+            </div>
+          </div>
+        ) : (
+          /* REQUIREMENT 2: DYNAMIC ROADMAP HANDLING VIA OBJECT.ENTRIES */
+          <div className="bg-black p-8 border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
+            <h3 className="text-4xl font-black mb-12 flex items-center gap-4 text-white uppercase italic tracking-tighter">
+              <BookOpen className="text-yellow-400" size={40} /> The Game Plan
+            </h3>
+            
+            <div className="space-y-12">
+              {result?.game_plan && Object.entries(result.game_plan).map(([phaseName, tasks], idx, array) => (
+                <div key={phaseName} className="flex gap-8 relative group">
+                  <div className="flex flex-col items-center">
+                    <div className="w-16 h-16 border-4 border-white bg-yellow-400 text-black flex items-center justify-center text-3xl font-black shrink-0 z-10 shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
+                      {idx + 1}
+                    </div>
+                    {idx !== array.length - 1 && (
+                      <div className="w-1.5 h-full bg-white mt-4"></div>
+                    )}
+                  </div>
+                  
+                  <div className="pb-10 w-full">
+                    <h4 className="text-3xl font-black text-yellow-400 uppercase tracking-tighter mb-4">
+                      {phaseName}
+                    </h4>
+                    
+                    {tasks && tasks.length > 0 ? (
+                      <div className="flex flex-col gap-4">
+                        {tasks.map((task, tIdx) => (
+                          <div key={tIdx} className="bg-zinc-900 border-2 border-zinc-700 p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                            <p className="text-[#4ADE80] font-black uppercase text-lg mb-3">
+                              {task.skill_name}
+                            </p>
+                            <div className="flex flex-wrap gap-3">
+                              <a href={task.links.youtube} target="_blank" rel="noreferrer" className="bg-red-500 text-white px-3 py-1 text-xs font-black uppercase border-2 border-black hover:translate-x-1 hover:-translate-y-1 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all">
+                                📺 YouTube
+                              </a>
+                              <a href={task.links.course} target="_blank" rel="noreferrer" className="bg-blue-500 text-white px-3 py-1 text-xs font-black uppercase border-2 border-black hover:translate-x-1 hover:-translate-y-1 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all">
+                                🎓 Course
+                              </a>
+                              <a href={task.links.reading} target="_blank" rel="noreferrer" className="bg-white text-black px-3 py-1 text-xs font-black uppercase border-2 border-black hover:translate-x-1 hover:-translate-y-1 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all">
+                                📖 Read
+                              </a>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="bg-zinc-900 border-2 border-zinc-700 p-4 mb-4">
+                        <p className="text-[#4ADE80] font-black uppercase text-md">
+                          Master the Essentials
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
       </div>
     </div>
