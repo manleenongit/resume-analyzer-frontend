@@ -10,10 +10,6 @@ interface TaskLink {
   reading: string;
 }
 
-interface DetailedTask {
-  skill_name: string;
-  links: TaskLink;
-}
 
 interface GamePlanPhase {
   skill_name: string;
@@ -91,9 +87,9 @@ export default function ResumeMatcher() {
           <Zap size={60} className="absolute -top-4 -right-4 text-purple-600 animate-bounce" />
         </div>
         <h2 className="text-5xl font-black uppercase italic tracking-tighter text-black text-center">
-          Crunching the <span className="bg-white px-2 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">Numbers</span>
+          Crunching the <span className="bg-white text-black px-2 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">Numbers</span>
         </h2>
-        <p className="mt-6 text-xl font-bold uppercase animate-pulse">Wait a sec, the AI is thinking really hard...</p>
+        <p className="mt-6 text-xl font-bold uppercase text-black animate-pulse">Wait a sec, the AI is thinking really hard...</p>
         <div className="mt-12 flex gap-4">
           <div className="w-8 h-8 bg-purple-500 border-4 border-black animate-bounce delay-75"></div>
           <div className="w-8 h-8 bg-red-500 border-4 border-black animate-bounce delay-150"></div>
@@ -109,12 +105,12 @@ export default function ResumeMatcher() {
       <div className="min-h-screen bg-[#FF5F5F] flex flex-col items-center justify-center p-8 font-mono">
         <div className="bg-white border-8 border-black p-10 shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] max-w-xl w-full text-center transform rotate-1">
           <div className="text-8xl mb-6">😵‍💫</div>
-          <h2 className="text-4xl font-black uppercase mb-4 tracking-tighter border-b-4 border-black pb-2 inline-block">
+          <h2 className="text-4xl font-black uppercase mb-4 tracking-tighter text-black border-b-4 border-black pb-2 inline-block">
             OOPS! WE HIT A SNAG
           </h2>
           
           <div className="bg-yellow-200 border-4 border-black p-4 my-6 text-left shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-            <p className="font-black text-lg leading-tight uppercase">
+            <p className="font-black text-lg text-black leading-tight uppercase">
               {errorMessage}
             </p>
           </div>
@@ -147,27 +143,27 @@ export default function ResumeMatcher() {
 
           <div className="space-y-10">
             <div className="bg-white border-4 border-black p-8 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
-              <label className="block text-2xl font-black mb-6 uppercase tracking-tighter italic">1. Drop that resume!</label>
+              <label className="block text-2xl font-black text-black mb-6 uppercase tracking-tighter italic">1. Drop that resume!</label>
               <div className={`border-4 border-dashed border-black p-12 text-center cursor-pointer relative transition-all ${resume ? 'bg-[#4ADE80]' : 'bg-white hover:bg-yellow-50'}`}>
                 <input type="file" accept=".pdf" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => setResume(e.target.files?.[0] || null)} />
                 {resume ? (
                   <div className="flex flex-col items-center">
                     <CheckCircle className="text-black mb-2" size={48} />
-                    <p className="font-black uppercase">{resume.name}</p>
+                    <p className="font-black uppercase text-black">{resume.name}</p>
                   </div>
                 ) : (
                   <>
                     <Upload className="mx-auto text-black mb-4" size={40}/>
-                    <p className="font-black uppercase text-sm italic">Click to browse or drop PDF</p>
+                    <p className="font-black uppercase text-sm text-black italic">Click to browse or drop PDF</p>
                   </>
                 )}
               </div>
             </div>
 
             <div className="bg-white border-4 border-black p-8 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
-              <label className="block text-2xl font-black mb-6 uppercase tracking-tighter italic">2. What&apos;s the job?</label>
+              <label className="block text-2xl font-black text-black mb-6 uppercase tracking-tighter italic">2. What&apos;s the job?</label>
               <textarea 
-                className="w-full h-48 p-4 border-4 border-black focus:bg-yellow-50 outline-none font-bold text-black text-lg"
+                className="w-full h-48 p-4 border-4 border-black bg-white focus:bg-yellow-50 outline-none font-bold text-black text-lg placeholder-zinc-500"
                 placeholder="Paste the requirements here..."
                 value={jobDescription}
                 onChange={(e) => setJobDescription(e.target.value)}
@@ -194,9 +190,9 @@ export default function ResumeMatcher() {
         {/* BACK BUTTON */}
         <button 
           onClick={() => setView('upload')}
-          className="mb-8 px-6 py-2 bg-white border-4 border-black font-black uppercase flex items-center gap-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all"
+          className="mb-8 px-6 py-2 bg-white text-black border-4 border-black font-black uppercase flex items-center gap-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all"
         >
-          <ArrowLeft size={20} /> Back to Start
+          <ArrowLeft size={20} className="text-black" /> Back to Start
         </button>
 
         {/* TOP SECTION: Score and Skills side-by-side */}
@@ -208,14 +204,14 @@ export default function ResumeMatcher() {
               {result?.match_score}%
             </div>
             <p className="text-white font-black uppercase text-xl mt-4 tracking-tighter">Overall Match Score</p>
-            <div className="absolute top-0 right-0 bg-yellow-400 border-l-4 border-b-4 border-black px-4 py-1 font-black text-sm">
+            <div className="absolute top-0 right-0 bg-yellow-400 text-black border-l-4 border-b-4 border-black px-4 py-1 font-black text-sm">
               AI VERIFIED
             </div>
           </div>
 
           {/* Skills Analysis Card */}
           <div className="bg-white border-4 border-black p-8 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] flex flex-col">
-            <h3 className="text-2xl font-black mb-6 uppercase border-b-4 border-black pb-2 inline-block self-start">
+            <h3 className="text-2xl font-black text-black mb-6 uppercase border-b-4 border-black pb-2 inline-block self-start">
               Skill Breakdown
             </h3>
             
@@ -225,7 +221,7 @@ export default function ResumeMatcher() {
                 <p className="text-xs font-black uppercase text-gray-500 mb-2">✅ Nailed It</p>
                 <div className="flex flex-wrap gap-3">
                   {result?.nailed_skills.map((s) => (
-                    <span key={s} className="px-3 py-1 bg-[#4ADE80] border-2 border-black font-black text-[10px] uppercase shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+                    <span key={s} className="px-3 py-1 bg-[#4ADE80] text-black border-2 border-black font-black text-[10px] uppercase shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
                       {s}
                     </span>
                   ))}
