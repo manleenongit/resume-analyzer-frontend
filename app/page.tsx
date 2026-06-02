@@ -276,23 +276,25 @@ export default function ResumeMatcher() {
             </h3>
             
             <div className="space-y-12">
-              {result?.game_plan && Object.entries(result.game_plan).map(([phaseName, tasks], idx, array) => (
-                <div key={phaseName} className="flex gap-8 relative group">
-                  <div className="flex flex-col items-center">
-                    <div className="w-16 h-16 border-4 border-white bg-yellow-400 text-black flex items-center justify-center text-3xl font-black shrink-0 z-10 shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
-                      {idx + 1}
+              {result?.game_plan && Object.entries(result.game_plan)
+                // Filter out any phases where the tasks array is null, undefined, or empty
+                .filter(([_, tasks]) => tasks && tasks.length > 0)
+                .map(([phaseName, tasks], idx, array) => (
+                  <div key={phaseName} className="flex gap-8 relative group">
+                    <div className="flex flex-col items-center">
+                      <div className="w-16 h-16 border-4 border-white bg-yellow-400 text-black flex items-center justify-center text-3xl font-black shrink-0 z-10 shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
+                        {idx + 1}
+                      </div>
+                      {idx !== array.length - 1 && (
+                        <div className="w-1.5 h-full bg-white mt-4"></div>
+                      )}
                     </div>
-                    {idx !== array.length - 1 && (
-                      <div className="w-1.5 h-full bg-white mt-4"></div>
-                    )}
-                  </div>
-                  
-                  <div className="pb-10 w-full">
-                    <h4 className="text-3xl font-black text-yellow-400 uppercase tracking-tighter mb-4">
-                      {phaseName}
-                    </h4>
                     
-                    {tasks && tasks.length > 0 ? (
+                    <div className="pb-10 w-full">
+                      <h4 className="text-3xl font-black text-yellow-400 uppercase tracking-tighter mb-4">
+                        {phaseName}
+                      </h4>
+                      
                       <div className="flex flex-col gap-4">
                         {tasks.map((task, tIdx) => (
                           <div key={tIdx} className="bg-zinc-900 border-2 border-zinc-700 p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
@@ -313,16 +315,9 @@ export default function ResumeMatcher() {
                           </div>
                         ))}
                       </div>
-                    ) : (
-                      <div className="bg-zinc-900 border-2 border-zinc-700 p-4 mb-4">
-                        <p className="text-[#4ADE80] font-black uppercase text-md">
-                          Master the Essentials
-                        </p>
-                      </div>
-                    )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
           </div>
         )}
