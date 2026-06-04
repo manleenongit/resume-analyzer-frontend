@@ -121,13 +121,10 @@ export default function ResumeMatcher() {
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden opacity-40 mix-blend-multiply">
         <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            {/* Tuned filter matrix: retains maximum vibrant color profiles while gluing vector outlines */}
             <filter id="neo-gooey-ink" x="-20%" y="-20%" width="140%" height="140%">
               <feGaussianBlur in="SourceGraphic" stdDeviation="25" result="blur" />
-              {/* Maintains color integrity (1s down the diagonal) while strictly sharpening the alphas */}
               <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 40 -15" result="goo" />
               
-              {/* Creates a thick, crisp outer vector wrapper */}
               <feMorphology in="goo" operator="dilate" radius="5" result="outline-base" />
               <feColorMatrix in="outline-base" mode="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="black-outline" />
               
@@ -139,13 +136,9 @@ export default function ResumeMatcher() {
           </defs>
           
           <g filter="url(#neo-gooey-ink)">
-            {/* Neo Neon Hot Pink (#FF007F) */}
             <circle cx="20%" cy="20%" r="240" fill="#FF007F" className="animate-blob-one" />
-            {/* Neo Acid/Cyber Green (#00FF66) */}
             <circle cx="80%" cy="40%" r="290" fill="#00FF66" className="animate-blob-two" />
-            {/* Neo Bright Orange (#FF6B00) */}
             <circle cx="40%" cy="80%" r="260" fill="#FF6B00" className="animate-blob-three" />
-            {/* Neo Vivid Cyan (#00E5FF) */}
             <circle cx="75%" cy="85%" r="220" fill="#00E5FF" className="animate-blob-four" />
           </g>
         </svg>
@@ -241,8 +234,8 @@ export default function ResumeMatcher() {
           {/* TOP SECTION */}
           <div className="grid md:grid-cols-2 gap-8 mb-12">
             {/* Score Bubble */}
-            <div className="bg-[#A855F7] p-8 border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] text-center relative flex flex-col justify-center min-h-62.5">
-              <div className="text-7xl sm:text-8xl font-black text-white drop-shadow-[6px_6px_0px_rgba(0,0,0,1)] wrap-break-words">
+            <div className="bg-[#A855F7] p-8 border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] text-center relative flex flex-col justify-center items-center min-h-[250px]">
+              <div className="text-7xl sm:text-8xl font-black text-white drop-shadow-[6px_6px_0px_rgba(0,0,0,1)] whitespace-nowrap">
                 {result?.match_score}%
               </div>
               <p className="text-white font-black uppercase text-xl mt-4 tracking-tighter">Overall Match Score</p>
@@ -256,31 +249,44 @@ export default function ResumeMatcher() {
               <h3 className="text-2xl font-black text-black mb-6 uppercase border-b-4 border-black pb-2 inline-block self-start">
                 Skill Breakdown
               </h3>
-              <div className="space-y-6">
-                <div>
-                  <p className="text-xs font-black uppercase text-gray-500 mb-2">✅ Nailed It</p>
-                  <div className="flex flex-wrap gap-3">
-                    {result?.nailed_skills.map((s) => (
-                      <span key={s} className="px-3 py-1 bg-[#4ADE80] text-black border-2 border-black font-black text-[10px] uppercase shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
-                        {s}
-                      </span>
-                    ))}
+              
+              {/* FIXED: Handles empty backend keyword extractions cleanly */}
+              {(!result?.nailed_skills.length && !result?.needs_work.length) ? (
+                <div className="bg-yellow-200 border-4 border-black p-4 my-auto shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                  <p className="text-base font-black uppercase text-black leading-tight">
+                    🕵️‍♂️ Job description does not contain recognizable skills.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  <div>
+                    <p className="text-xs font-black uppercase text-gray-500 mb-2">✅ Nailed It</p>
+                    <div className="flex flex-wrap gap-3">
+                      {result?.nailed_skills.map((s) => (
+                        <span key={s} className="px-3 py-1 bg-[#4ADE80] text-black border-2 border-black font-black text-[10px] uppercase shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+                          {s}
+                        </span>
+                      ))}
+                      {result?.nailed_skills.length === 0 && (
+                        <p className="text-xs font-bold italic text-zinc-500">None matched.</p>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs font-black uppercase text-gray-500 mb-2">🚩 Needs Work</p>
+                    <div className="flex flex-wrap gap-3">
+                      {result?.needs_work.map((s) => (
+                        <span key={s} className="px-3 py-1 bg-[#FF5F5F] text-white border-2 border-black font-black text-[10px] uppercase shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+                          {s}
+                        </span>
+                      ))}
+                      {result?.needs_work.length === 0 && (
+                        <p className="text-sm font-bold italic text-green-600">No missing skills! You are a beast!</p>
+                      )}
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <p className="text-xs font-black uppercase text-gray-500 mb-2">🚩 Needs Work</p>
-                  <div className="flex flex-wrap gap-3">
-                    {result?.needs_work.map((s) => (
-                      <span key={s} className="px-3 py-1 bg-[#FF5F5F] text-white border-2 border-black font-black text-[10px] uppercase shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
-                        {s}
-                      </span>
-                    ))}
-                    {result?.needs_work.length === 0 && (
-                      <p className="text-sm font-bold italic text-green-600">No missing skills! You are a beast!</p>
-                    )}
-                  </div>
-                </div>
-              </div>
+              )}
             </div>
           </div>
 
@@ -302,42 +308,45 @@ export default function ResumeMatcher() {
               </div>
             </div>
           ) : (
-            <div className="bg-black p-8 border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
-              <h3 className="text-4xl font-black mb-12 flex items-center gap-4 text-white uppercase italic tracking-tighter">
-                <BookOpen className="text-yellow-400" size={40} /> The Game Plan
-              </h3>
-              <div className="space-y-12">
-                {result?.game_plan && Object.entries(result.game_plan)
-                  .filter(([_, tasks]) => tasks && tasks.length > 0)
-                  .map(([phaseName, tasks], idx, array) => (
-                    <div key={phaseName} className="flex gap-8 relative group">
-                      <div className="flex flex-col items-center">
-                        <div className="w-16 h-16 border-4 border-white bg-yellow-400 text-black flex items-center justify-center text-3xl font-black shrink-0 z-10 shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
-                          {idx + 1}
+            /* FIXED: Completely hides empty black boxes if the backend sends 0 usable recommendations */
+            result?.game_plan && Object.values(result.game_plan).some(tasks => tasks && tasks.length > 0) ? (
+              <div className="bg-black p-8 border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
+                <h3 className="text-4xl font-black mb-12 flex items-center gap-4 text-white uppercase italic tracking-tighter">
+                  <BookOpen className="text-yellow-400" size={40} /> The Game Plan
+                </h3>
+                <div className="space-y-12">
+                  {Object.entries(result.game_plan)
+                    .filter(([_, tasks]) => tasks && tasks.length > 0)
+                    .map(([phaseName, tasks], idx, array) => (
+                      <div key={phaseName} className="flex gap-8 relative group">
+                        <div className="flex flex-col items-center">
+                          <div className="w-16 h-16 border-4 border-white bg-yellow-400 text-black flex items-center justify-center text-3xl font-black shrink-0 z-10 shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
+                            {idx + 1}
+                          </div>
+                          {idx !== array.length - 1 && (
+                            <div className="w-1.5 h-full bg-white mt-4"></div>
+                          )}
                         </div>
-                        {idx !== array.length - 1 && (
-                          <div className="w-1.5 h-full bg-white mt-4"></div>
-                        )}
-                      </div>
-                      <div className="pb-10 w-full">
-                        <h4 className="text-3xl font-black text-yellow-400 uppercase tracking-tighter mb-4">{phaseName}</h4>
-                        <div className="flex flex-col gap-4">
-                          {tasks.map((task, tIdx) => (
-                            <div key={tIdx} className="bg-zinc-900 border-2 border-zinc-700 p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                              <p className="text-[#4ADE80] font-black uppercase text-lg mb-3">{task.skill_name}</p>
-                              <div className="flex flex-wrap gap-3">
-                                <a href={task.links.youtube} target="_blank" rel="noreferrer" className="bg-red-500 text-white px-3 py-1 text-xs font-black uppercase border-2 border-black hover:translate-x-1 hover:-translate-y-1 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all">📺 YouTube</a>
-                                <a href={task.links.course} target="_blank" rel="noreferrer" className="bg-blue-500 text-white px-3 py-1 text-xs font-black uppercase border-2 border-black hover:translate-x-1 hover:-translate-y-1 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all">🎓 Course</a>
-                                <a href={task.links.reading} target="_blank" rel="noreferrer" className="bg-white text-black px-3 py-1 text-xs font-black uppercase border-2 border-black hover:translate-x-1 hover:-translate-y-1 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all">📖 Read</a>
+                        <div className="pb-10 w-full">
+                          <h4 className="text-3xl font-black text-yellow-400 uppercase tracking-tighter mb-4">{phaseName}</h4>
+                          <div className="flex flex-col gap-4">
+                            {tasks.map((task, tIdx) => (
+                              <div key={tIdx} className="bg-zinc-900 border-2 border-zinc-700 p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                                <p className="text-[#4ADE80] font-black uppercase text-lg mb-3">{task.skill_name}</p>
+                                <div className="flex flex-wrap gap-3">
+                                  <a href={task.links.youtube} target="_blank" rel="noreferrer" className="bg-red-500 text-white px-3 py-1 text-xs font-black uppercase border-2 border-black hover:translate-x-1 hover:-translate-y-1 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all">📺 YouTube</a>
+                                  <a href={task.links.course} target="_blank" rel="noreferrer" className="bg-blue-500 text-white px-3 py-1 text-xs font-black uppercase border-2 border-black hover:translate-x-1 hover:-translate-y-1 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all">🎓 Course</a>
+                                  <a href={task.links.reading} target="_blank" rel="noreferrer" className="bg-white text-black px-3 py-1 text-xs font-black uppercase border-2 border-black hover:translate-x-1 hover:-translate-y-1 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all">📖 Read</a>
+                                </div>
                               </div>
-                            </div>
-                          ))}
+                            ))}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                </div>
               </div>
-            </div>
+            ) : null
           )}
         </div>
       )}
