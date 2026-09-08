@@ -1,7 +1,8 @@
 "use client";
 import React, { useState } from 'react';
-import axios from 'axios';
-import { Upload, CheckCircle, BookOpen, Loader2, ArrowLeft, Zap, Trophy, PartyPopper } from 'lucide-react';
+import { Upload, CheckCircle, BookOpen, Loader2, ArrowLeft, Zap, Trophy, PartyPopper, BrainCircuit } from 'lucide-react';
+import { analyzeResume } from '../lib/api';
+import MockInterviewModal from '../components/MockInterviewModal';
 
 // --- TYPESCRIPT INTERFACES ---
 interface TaskLink {
@@ -16,11 +17,11 @@ interface GamePlanPhase {
 }
 
 interface AnalysisResult {
-  match_score: number;
-  nailed_skills: string[];
-  needs_work: string[];
+  overall_score: number;
+  skills_found: string[];
+  skills_missing: string[];
   is_perfect_match: boolean;
-  game_plan: {
+  roadmap: {
     [phaseName: string]: GamePlanPhase[];
   };
 }
@@ -32,6 +33,8 @@ export default function ResumeMatcher() {
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [view, setView] = useState<'upload' | 'results'>('upload');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [analysisId, setAnalysisId] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleProcess = async () => {
     setErrorMessage(null); 
@@ -52,23 +55,17 @@ export default function ResumeMatcher() {
     
     setLoading(true);
     try {
-      const formData = new FormData();
-      formData.append("resume", resume); 
-      formData.append("jobDescription", jobDescription);
-
-      const response = await axios.post(
-        'https://resume-analyzer-backend-api-cmzw.onrender.com/api/analyze', 
-        formData
-      );
+      const data = await analyzeResume(resume, jobDescription);
       
-      setResult(response.data);
+      setResult(data);
+      setAnalysisId(data.analysis_id || null);
       setView('results'); 
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error:", error);
-      if (axios.isAxiosError(error) && error.response?.data?.error === "UNREADABLE_PDF") {
-        setErrorMessage(error.response.data.message || "This PDF is basically a picture. Our AI needs actual text to work its magic!");
+      if (error.message.includes("5MB") || error.message.includes("PDF") || error.message.includes("limit")) {
+        setErrorMessage(error.message);
       } else {
-        setErrorMessage("The backend is taking a nap or the tunnel is broken. Make sure your friend's server is actually running!");
+        setErrorMessage("The backend is taking a nap or the tunnel is broken. Make sure your friend's server is actually running! Error: " + error.message);
       }
       setView('upload'); 
     } finally {
@@ -231,12 +228,20 @@ export default function ResumeMatcher() {
             <ArrowLeft size={20} className="text-black" /> Back to Start
           </button>
 
+          {/* STICKY NAV */}
+          <div className="sticky top-4 z-40 mb-12 bg-white border-4 border-black p-4 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] flex flex-wrap gap-4 justify-center">
+            <button onClick={() => document.getElementById('section-score')?.scrollIntoView({behavior: 'smooth'})} className="px-4 py-2 bg-yellow-400 text-black border-4 border-black font-black uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all">Score</button>
+            <button onClick={() => document.getElementById('section-skills')?.scrollIntoView({behavior: 'smooth'})} className="px-4 py-2 bg-[#A855F7] text-white border-4 border-black font-black uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all">Skills</button>
+            {analysisId && <button onClick={() => document.getElementById('section-interview')?.scrollIntoView({behavior: 'smooth'})} className="px-4 py-2 bg-[#FF5F5F] text-black border-4 border-black font-black uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all">Interview</button>}
+            <button onClick={() => document.getElementById('section-roadmap')?.scrollIntoView({behavior: 'smooth'})} className="px-4 py-2 bg-[#4ADE80] text-black border-4 border-black font-black uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all">Game Plan</button>
+          </div>
+
           {/* TOP SECTION */}
-          <div className="grid md:grid-cols-2 gap-8 mb-12">
+          <div className="flex flex-col gap-12 mb-12">
             {/* Score Bubble */}
-            <div className="bg-[#A855F7] p-8 border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] text-center relative flex flex-col justify-center items-center min-h-[250px]">
+            <div id="section-score" className="scroll-mt-24 bg-[#A855F7] p-8 border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] text-center relative flex flex-col justify-center items-center min-h-[250px] w-full">
               <div className="text-7xl sm:text-8xl font-black text-white drop-shadow-[6px_6px_0px_rgba(0,0,0,1)] whitespace-nowrap">
-                {result?.match_score}%
+                {result?.overall_score}%
               </div>
               <p className="text-white font-black uppercase text-xl mt-4 tracking-tighter">Overall Match Score</p>
               <div className="absolute top-0 right-0 bg-yellow-400 text-black border-l-4 border-b-4 border-black px-4 py-1 font-black text-sm">
@@ -245,13 +250,11 @@ export default function ResumeMatcher() {
             </div>
 
             {/* Skills Analysis Card */}
-            <div className="bg-white border-4 border-black p-8 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] flex flex-col">
-              <h3 className="text-2xl font-black text-black mb-6 uppercase border-b-4 border-black pb-2 inline-block self-start">
+            <div id="section-skills" className="scroll-mt-24 bg-white border-4 border-black p-8 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] flex flex-col w-full">
+              <h3 className="text-3xl font-black text-black mb-6 uppercase border-b-4 border-black pb-2 inline-block self-start">
                 Skill Breakdown
               </h3>
-              
-              {/* FIXED: Handles empty backend keyword extractions cleanly */}
-              {(!result?.nailed_skills.length && !result?.needs_work.length) ? (
+              {(!result?.skills_found.length && !result?.skills_missing.length) ? (
                 <div className="bg-yellow-200 border-4 border-black p-4 my-auto shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                   <p className="text-base font-black uppercase text-black leading-tight">
                     🕵️‍♂️ Job description does not contain recognizable skills.
@@ -260,27 +263,27 @@ export default function ResumeMatcher() {
               ) : (
                 <div className="space-y-6">
                   <div>
-                    <p className="text-xs font-black uppercase text-gray-500 mb-2">✅ Nailed It</p>
-                    <div className="flex flex-wrap gap-3">
-                      {result?.nailed_skills.map((s) => (
-                        <span key={s} className="px-3 py-1 bg-[#4ADE80] text-black border-2 border-black font-black text-[10px] uppercase shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+                    <p className="text-sm font-black uppercase text-gray-500 mb-3">✅ Nailed It</p>
+                    <div className="flex flex-wrap gap-4">
+                      {result?.skills_found.map((s) => (
+                        <span key={s} className="px-4 py-2 bg-[#4ADE80] text-black border-2 border-black font-black text-sm uppercase shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
                           {s}
                         </span>
                       ))}
-                      {result?.nailed_skills.length === 0 && (
-                        <p className="text-xs font-bold italic text-zinc-500">None matched.</p>
+                      {result?.skills_found.length === 0 && (
+                        <p className="text-sm font-bold italic text-zinc-500">None matched.</p>
                       )}
                     </div>
                   </div>
                   <div>
-                    <p className="text-xs font-black uppercase text-gray-500 mb-2">🚩 Needs Work</p>
-                    <div className="flex flex-wrap gap-3">
-                      {result?.needs_work.map((s) => (
-                        <span key={s} className="px-3 py-1 bg-[#FF5F5F] text-white border-2 border-black font-black text-[10px] uppercase shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+                    <p className="text-sm font-black uppercase text-gray-500 mb-3">🚩 Needs Work</p>
+                    <div className="flex flex-wrap gap-4">
+                      {result?.skills_missing.map((s) => (
+                        <span key={s} className="px-4 py-2 bg-[#FF5F5F] text-white border-2 border-black font-black text-sm uppercase shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
                           {s}
                         </span>
                       ))}
-                      {result?.needs_work.length === 0 && (
+                      {result?.skills_missing.length === 0 && (
                         <p className="text-sm font-bold italic text-green-600">No missing skills! You are a beast!</p>
                       )}
                     </div>
@@ -290,9 +293,25 @@ export default function ResumeMatcher() {
             </div>
           </div>
 
+          {/* MOCK INTERVIEW BANNER */}
+          {analysisId && (
+            <div id="section-interview" className="scroll-mt-24 bg-[#FF5F5F] border-4 border-black p-10 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] text-center w-full mb-12 flex flex-col md:flex-row items-center justify-between gap-8 transform rotate-1">
+              <div className="text-left">
+                <h3 className="text-4xl font-black text-white uppercase tracking-tighter drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]">Prepare for Battle</h3>
+                <p className="text-xl font-bold text-black mt-2 bg-yellow-400 inline-block px-2 border-2 border-black">Face our AI interviewer</p>
+              </div>
+              <button 
+                onClick={() => setIsModalOpen(true)}
+                className="px-8 py-4 bg-white text-black border-4 border-black font-black text-2xl uppercase shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-2 hover:translate-y-2 transition-all flex items-center gap-3 whitespace-nowrap"
+              >
+                <BrainCircuit size={28} /> Start AI Mock Interview
+              </button>
+            </div>
+          )}
+
           {/* PERFECT MATCH CHECK OR ROADMAP */}
           {result?.is_perfect_match ? (
-            <div className="bg-[#4ADE80] border-8 border-black p-12 text-center shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] transform -rotate-1 relative overflow-hidden">
+            <div id="section-roadmap" className="scroll-mt-24 bg-[#4ADE80] border-8 border-black p-12 text-center shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] transform -rotate-1 relative overflow-hidden w-full">
               <div className="absolute -top-6 -left-6 bg-yellow-400 border-4 border-black p-4 rounded-full animate-bounce">
                 <PartyPopper size={40} className="text-black" />
               </div>
@@ -309,13 +328,19 @@ export default function ResumeMatcher() {
             </div>
           ) : (
             /* FIXED: Completely hides empty black boxes if the backend sends 0 usable recommendations */
-            result?.game_plan && Object.values(result.game_plan).some(tasks => tasks && tasks.length > 0) ? (
-              <div className="bg-black p-8 border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
-                <h3 className="text-4xl font-black mb-12 flex items-center gap-4 text-white uppercase italic tracking-tighter">
+            result?.roadmap && Object.values(result.roadmap).some(tasks => tasks && tasks.length > 0) ? (
+              <div id="section-roadmap" className="scroll-mt-24 bg-black p-8 border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] w-full">
+                <h3 className="text-4xl font-black mb-12 flex items-center gap-4 text-white uppercase italic tracking-tighter relative inline-flex">
                   <BookOpen className="text-yellow-400" size={40} /> The Game Plan
+                  <div className="group relative ml-4 flex items-center justify-center cursor-pointer">
+                    <span className="text-yellow-400 text-5xl hover:scale-110 transition-transform drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]">★</span>
+                    <div className="hidden group-hover:block absolute left-1/2 top-full mt-4 -translate-x-1/2 w-80 bg-[#FF5F5F] text-white border-4 border-black p-4 font-black uppercase text-base shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] z-50 tracking-normal not-italic text-center">
+                      🔥 CURATED BY AI: We scoured 5,400+ active resources so you don't have to.
+                    </div>
+                  </div>
                 </h3>
                 <div className="space-y-12">
-                  {Object.entries(result.game_plan)
+                  {Object.entries(result.roadmap)
                     .filter(([_, tasks]) => tasks && tasks.length > 0)
                     .map(([phaseName, tasks], idx, array) => (
                       <div key={phaseName} className="flex gap-8 relative group">
@@ -349,6 +374,14 @@ export default function ResumeMatcher() {
             ) : null
           )}
         </div>
+      )}
+
+      {/* MODAL MOUNTING POINT */}
+      {isModalOpen && analysisId && (
+        <MockInterviewModal 
+          analysisId={analysisId} 
+          onClose={() => setIsModalOpen(false)} 
+        />
       )}
     </div>
   );
