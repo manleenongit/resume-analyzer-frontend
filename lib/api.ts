@@ -1,13 +1,17 @@
+import { supabase } from './supabase';
+
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api/v2";
 
-export const getAuthToken = (): string | null => {
+export const getAuthToken = async (): Promise<string | null> => {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem("session_jwt");
+  const { data } = await supabase.auth.getSession();
+  return data.session?.access_token || null;
 };
 
-export const getStoredUserId = (): string | null => {
+export const getStoredUserId = async (): Promise<string | null> => {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem("user_id");
+  const { data } = await supabase.auth.getSession();
+  return data.session?.user?.id || null;
 };
 
 export async function authenticateUser(provider: "google" | "github", token: string) {
@@ -30,12 +34,10 @@ export async function analyzeResume(file: File, jobDescription: string, targetBr
   formData.append("job_description", jobDescription);
   formData.append("target_branch", targetBranch);
 
-  const token = getAuthToken();
+  const token = await getAuthToken();
   const headers: Record<string, string> = {};
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
-  } else {
-    headers["X-Test-Bypass"] = "true";
   }
 
   const res = await fetch(`${API_BASE}/analyze`, {
@@ -64,8 +66,8 @@ export async function analyzeResume(file: File, jobDescription: string, targetBr
 }
 
 export async function fetchUserHistory(userId?: string) {
-  const uid = userId || getStoredUserId();
-  const token = getAuthToken();
+  const uid = userId || await getStoredUserId();
+  const token = await getAuthToken();
   if (!uid) {
     if (!token) {
         return { history: [] }; 
@@ -76,8 +78,6 @@ export async function fetchUserHistory(userId?: string) {
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
-  } else {
-    headers["X-Test-Bypass"] = "true";
   }
 
   const res = await fetch(`${API_BASE}/users/${uid}/history`, {
@@ -90,12 +90,10 @@ export async function fetchUserHistory(userId?: string) {
 }
 
 export async function generateMockInterview(analysisId: string, difficulty: "Beginner" | "Intermediate" | "Hard" = "Intermediate") {
-  const token = getAuthToken();
+  const token = await getAuthToken();
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
-  } else {
-    headers["X-Test-Bypass"] = "true";
   }
 
   const res = await fetch(`${API_BASE}/interview/generate`, {
