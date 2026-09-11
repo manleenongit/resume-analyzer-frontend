@@ -39,6 +39,7 @@ export default function AnalyzerPage() {
   const [analysisId, setAnalysisId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
@@ -47,6 +48,7 @@ export default function AnalyzerPage() {
         router.push('/login');
       } else {
         setUser(session.user);
+        setAuthLoading(false);
       }
     });
     
@@ -55,6 +57,7 @@ export default function AnalyzerPage() {
         router.push('/login');
       } else {
         setUser(session.user);
+        setAuthLoading(false);
       }
     });
 
@@ -103,6 +106,18 @@ export default function AnalyzerPage() {
       setLoading(false);
     }
   };
+
+  // --- AUTH LOADING SCREEN ---
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-[#FFFBEB] flex flex-col items-center justify-center p-8 font-mono">
+        <div className="bg-white border-8 border-black p-10 shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] text-center transform -rotate-1">
+          <Loader2 size={80} className="animate-spin text-black mx-auto mb-6" />
+          <h2 className="text-4xl font-black uppercase text-black tracking-tighter">VERIFYING CREDENTIALS...</h2>
+        </div>
+      </div>
+    );
+  }
 
   // --- QUIRKY LOADING SCREEN ---
   if (loading) {
