@@ -105,3 +105,11 @@ export async function generateMockInterview(analysisId: string, difficulty: "Beg
   if (!res.ok) throw new Error(`Failed to generate interview: ${res.statusText}`);
   return await res.json();
 }
+
+export async function pingBackend() {
+  try {
+    await fetch(`${API_BASE}/ping`, { method: "GET" });
+  } catch (e) {
+    // Ignore errors silently
+  }
+}

@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
+import { pingBackend } from '../../lib/api';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Loader2, Sparkles, Eye, EyeOff } from 'lucide-react';
@@ -16,6 +17,10 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [signUpSuccess, setSignUpSuccess] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    pingBackend();
+  }, []);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();

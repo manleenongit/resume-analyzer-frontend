@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import { pingBackend } from '../lib/api';
 import Link from 'next/link';
 import { FileSearch, BrainCircuit, BookOpen, ArrowRight } from 'lucide-react';
 
@@ -9,6 +10,8 @@ export default function LandingPage() {
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
+    pingBackend();
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user || null);
     });
