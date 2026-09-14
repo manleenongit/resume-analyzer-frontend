@@ -53,8 +53,13 @@ export async function analyzeResume(file: File, jobDescription: string, targetBr
     let errorMsg = `Analysis failed with status ${res.status}`;
     try {
       const errorData = await res.json();
-      if (errorData.message || errorData.error) {
-        errorMsg = errorData.message || errorData.error;
+      if (errorData.error) {
+        errorMsg = typeof errorData.error === 'string' ? errorData.error : JSON.stringify(errorData.error);
+        if (errorData.details) {
+          errorMsg += `\nDetails: ${typeof errorData.details === 'string' ? errorData.details : JSON.stringify(errorData.details)}`;
+        }
+      } else if (errorData.message) {
+        errorMsg = typeof errorData.message === 'string' ? errorData.message : JSON.stringify(errorData.message);
       }
     } catch (e) {
       // Ignore JSON parse error

@@ -96,10 +96,12 @@ export default function AnalyzerPage() {
       setView('results'); 
     } catch (error: any) {
       console.error("Error:", error);
-      if (error.message.includes("5MB") || error.message.includes("PDF") || error.message.includes("limit")) {
-        setErrorMessage(error.message);
+      const errMsg = error?.message || String(error) || "Unknown error occurred";
+      
+      if (typeof errMsg === 'string' && (errMsg.includes("5MB") || errMsg.includes("PDF") || errMsg.includes("limit"))) {
+        setErrorMessage(errMsg);
       } else {
-        setErrorMessage("The backend is taking a nap or the tunnel is broken. Make sure your friend's server is actually running! Error: " + error.message);
+        setErrorMessage("The backend is taking a nap or the tunnel is broken. Make sure your friend's server is actually running! Error: " + errMsg);
       }
       setView('upload'); 
     } finally {
@@ -145,7 +147,7 @@ export default function AnalyzerPage() {
             OOPS! WE HIT A SNAG
           </h2>
           <div className="bg-yellow-200 border-4 border-black p-4 my-6 text-left shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-            <p className="font-black text-lg text-black leading-tight uppercase">{errorMessage}</p>
+            <p className="font-black text-lg text-black leading-tight uppercase whitespace-pre-wrap">{errorMessage}</p>
           </div>
           <button 
             onClick={() => setErrorMessage(null)}
