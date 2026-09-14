@@ -120,7 +120,7 @@ export default function DashboardPage() {
                     )}
                   </div>
                   <h3 className="text-2xl font-black text-black uppercase mb-6 line-clamp-3 leading-snug">
-                    {record.job_title || "Unknown Position"}
+                    {record.job_title || "Target Role Analysis"}
                   </h3>
                 </div>
 
