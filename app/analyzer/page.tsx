@@ -163,10 +163,10 @@ export default function AnalyzerPage() {
   return (
     <div className="min-h-screen p-8 font-mono relative overflow-hidden bg-[#FFFBEB]">
       {/* HEADER NAV */}
-      <nav className="sticky top-0 z-50 flex justify-between items-center mb-8 bg-white border-4 border-black p-4 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+      <nav className="sticky top-0 z-50 flex flex-col gap-4 md:flex-row md:justify-between items-center mb-8 bg-white border-4 border-black p-4 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
         <div className="text-2xl font-black uppercase tracking-tighter">RESUME MATCHER</div>
         <div className="flex gap-4">
-          <Link href="/dashboard" className="px-6 py-2 bg-yellow-400 text-black border-4 border-black font-black uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all">YOUR DASHBOARD</Link>
+          <Link href="/dashboard" className="px-6 py-2 bg-yellow-400 text-black border-4 border-black font-black uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all text-center">YOUR DASHBOARD</Link>
           <button onClick={handleLogout} className="px-6 py-2 bg-[#FF5F5F] text-white border-4 border-black font-black uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all">LOGOUT</button>
         </div>
       </nav>

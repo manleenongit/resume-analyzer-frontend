@@ -83,7 +83,7 @@ export default function LandingPage() {
 
       <div className="max-w-6xl mx-auto relative z-10">
         {/* HEADER NAV */}
-        <nav className="sticky top-0 z-50 flex justify-between items-center mb-8 md:mb-16 bg-white border-4 border-black p-3 md:p-4 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+        <nav className="sticky top-0 z-50 flex flex-col gap-4 md:flex-row md:justify-between items-center mb-8 md:mb-16 bg-white border-4 border-black p-3 md:p-4 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
           <div className="text-xl md:text-3xl font-black uppercase tracking-tighter truncate mr-2">RESUME MATCHER</div>
           <div className="flex gap-2 md:gap-4 shrink-0">
             {user ? (
